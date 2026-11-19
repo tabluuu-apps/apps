@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Taquería El Comal · Menú</title>
+<meta name="description" content="Menú digital de Taquería El Comal. Haz tu pedido por WhatsApp.">
+<meta name="theme-color" content="#F5F2EC">
+<script>
+/* =====================================================================
+   CONFIG DEL NEGOCIO  (solo cambia esto para cada cliente)
+   ===================================================================== */
+var CONFIG = {
+  nombre: "Taquería El Comal",
+  lema: "Tacos al pastor, suadero y guisados desde 2009",
+  whatsapp: "527441658869",          // 52 + número a 10 dígitos, sin espacios
+  telefono: "744 165 8869",
+  direccion: "Av. Costera 120, Col. Centro, Acapulco, Gro.",
+  mapa: "https://maps.google.com/?q=Av.+Costera+120+Acapulco",
+  horarioTexto: "Martes a domingo · 6:00 pm a 1:00 am",
+  // Días: 0=dom, 1=lun ... 6=sáb. Horas en formato 24 h (cierre después de medianoche = 25 = 1 am)
+  horario: { dias: [0, 2, 3, 4, 5, 6], abre: 18, cierra: 25 },
+  moneda: "$",
+  servicio: ["Para comer aquí", "Para llevar", "A domicilio"],
+  envio: "Envío a domicilio $25 dentro de 3 km",
+  pdf: "menu.pdf",
+  firma: "Menú digital por Tabluuu"
+};
+
+/* Categorías y productos. etiqueta opcional: "Picante", "Nuevo", "Favorito", "Vegetariano" */
+var MENU = [
+  { cat: "Tacos", nota: "Tortilla de maíz hecha a mano. Orden de 5 piezas o por pieza.", items: [
+    { n: "Pastor", d: "Con piña, cebolla y cilantro", p: 18, e: "Favorito" },
+    { n: "Suadero", d: "Jugoso, dorado en el comal", p: 18 },
+    { n: "Bistec", d: "Res asada a la plancha", p: 20 },
+    { n: "Campechano", d: "Bistec con longaniza", p: 22 },
+    { n: "Tripa", d: "Bien dorada", p: 22 },
+    { n: "Orden de 5 pastor", d: "Con salsas y limones", p: 80 }
+  ]},
+  { cat: "Especialidades", items: [
+    { n: "Gringa", d: "Tortilla de harina, pastor y queso gratinado", p: 65, e: "Favorito" },
+    { n: "Volcán", d: "Tostada con queso fundido y carne a elegir", p: 35 },
+    { n: "Quesadilla de harina", d: "Con queso Oaxaca y carne a elegir", p: 55 },
+    { n: "Alambre", d: "Bistec, tocino, pimiento, cebolla y queso", p: 120 },
+    { n: "Costra", d: "Queso dorado envolviendo la carne", p: 40, e: "Nuevo" }
+  ]},
+  { cat: "Guisados", nota: "Disponibles hasta agotar existencia.", items: [
+    { n: "Chicharrón en salsa verde", d: "Taco de guisado", p: 16 },
+    { n: "Rajas con crema", d: "Taco de guisado", p: 16, e: "Vegetariano" },
+    { n: "Tinga de pollo", d: "Taco de guisado", p: 16 },
+    { n: "Papa con chorizo", d: "Taco de guisado", p: 16, e: "Picante" }
+  ]},
+  { cat: "Bebidas", items: [
+    { n: "Agua de horchata", d: "Medio litro", p: 25 },
+    { n: "Agua de jamaica", d: "Medio litro", p: 25 },
+    { n: "Refresco", d: "Vidrio 355 ml", p: 28 },
+    { n: "Café de olla", d: "Con canela y piloncillo", p: 22 }
+  ]},
+  { cat: "Postres", items: [
+    { n: "Flan napolitano", d: "Rebanada", p: 35 },
+    { n: "Arroz con leche", d: "Vaso de 250 ml", p: 30 }
+  ]}
+];
+</script>
+<style>
+:root{
+  --bg:#F5F2EC; --card:#FFFFFF; --ink:#2F3437; --muted:#7A7468; --line:#E6E0D5;
+  --accent:#8A6F55; --accent-soft:#EFE7DC; --ok:#6E8B6A; --off:#A98B7A;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,"Segoe UI",Roboto,Arial,sans-serif;-webkit-font-smoothing:antialiased;padding-bottom:96px}
+.w{max-width:640px;margin:0 auto;padding:0 16px}
+header{padding:36px 0 18px;text-align:center}
+.logo{width:64px;height:64px;border-radius:50%;background:var(--accent-soft);color:var(--accent);display:flex;align-items:center;justify-content:center;margin:0 auto 12px;font:600 26px Georgia,serif;border:1px solid var(--line)}
+h1{font:600 30px/1.2 Georgia,"Times New Roman",serif;margin:0 0 6px;letter-spacing:.2px}
+.lema{color:var(--muted);margin:0 0 14px;font-size:15px}
+.estado{display:inline-flex;align-items:center;gap:8px;font-size:13px;padding:6px 12px;border-radius:99px;background:var(--card);border:1px solid var(--line)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--off)}
+.estado.abierto .dot{background:var(--ok)}
+.info{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px}
+.info a{font-size:13px;color:var(--ink);text-decoration:none;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:7px 12px}
+nav{position:sticky;top:0;z-index:5;background:rgba(245,242,236,.96);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.chips{display:flex;gap:8px;overflow-x:auto;padding:10px 16px;max-width:640px;margin:0 auto;scrollbar-width:none}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:99px;padding:7px 14px;font-size:14px;cursor:pointer;font-family:inherit}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.buscar{width:100%;margin:16px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);font:inherit;color:var(--ink)}
+.buscar:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+section{padding-top:22px;scroll-margin-top:60px}
+h2{font:600 21px Georgia,serif;margin:0 0 2px}
+.nota{color:var(--muted);font-size:13px;margin:0 0 10px}
+.lista{background:var(--card);border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-top:10px}
+.item{display:flex;gap:12px;align-items:center;padding:14px 16px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.txt{flex:1;min-width:0}
+.nom{font-weight:600}
+.tag{display:inline-block;font-size:11px;font-weight:600;color:var(--accent);background:var(--accent-soft);border-radius:6px;padding:1px 7px;margin-left:6px;vertical-align:2px}
+.desc{color:var(--muted);font-size:13.5px;margin-top:1px}
+.precio{font-weight:600;margin-top:4px}
+.ctl{display:flex;align-items:center;gap:8px;flex:none}
+.b{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--bg);font-family:inherit;font-size:20px;font-weight:600;line-height:1;color:var(--ink);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+.b.mas{background:var(--ink);color:#fff;border-color:var(--ink)}
+.q{min-width:16px;text-align:center;font-weight:600}
+.ctl.cero .menos,.ctl.cero .q{display:none}
+.vacio{text-align:center;color:var(--muted);padding:30px 0;display:none}
+footer{text-align:center;color:var(--muted);font-size:13px;padding:34px 0 10px}
+footer a{color:var(--accent)}
+.pdf{display:inline-block;margin-bottom:12px;padding:10px 16px;border:1px solid var(--line);border-radius:12px;background:var(--card);color:var(--ink);text-decoration:none;font-size:14px}
+.barra{position:fixed;left:0;right:0;bottom:0;z-index:10;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:linear-gradient(to top,var(--bg) 70%,rgba(245,242,236,0))}
+.barra button{display:flex;justify-content:space-between;align-items:center;width:100%;max-width:608px;margin:0 auto;border:0;border-radius:14px;background:var(--ink);color:#fff;padding:15px 18px;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer}
+.barra .cnt{background:rgba(255,255,255,.16);border-radius:8px;padding:2px 9px;margin-right:8px}
+.fondo{position:fixed;inset:0;background:rgba(47,52,55,.35);z-index:20;display:none}
+.panel{position:fixed;left:0;right:0;bottom:0;z-index:21;background:var(--bg);border-radius:20px 20px 0 0;max-height:88vh;overflow:auto;transform:translateY(105%);transition:transform .25s ease;padding:8px 16px calc(18px + env(safe-area-inset-bottom))}
+.panel.on{transform:none}.fondo.on{display:block}
+.panel .w{padding:0}
+.asa{width:40px;height:4px;border-radius:4px;background:var(--line);margin:6px auto 14px}
+.panel h3{font:600 21px Georgia,serif;margin:0 0 12px;display:flex;justify-content:space-between;align-items:center}
+.cerrar{border:0;background:none;font-size:26px;color:var(--muted);cursor:pointer;line-height:1}
+.fila{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:15px}
+.total{display:flex;justify-content:space-between;font-weight:700;font-size:18px;padding:14px 0 4px}
+label{display:block;font-size:13px;color:var(--muted);margin:14px 0 6px}
+.panel input,.panel textarea{width:100%;padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--card);font:inherit;color:var(--ink)}
+.opc{display:flex;flex-wrap:wrap;gap:8px}
+.opc .chip{font-size:13.5px}
+.dir{display:none}
+.envio{font-size:12.5px;color:var(--muted);margin-top:6px}
+.enviar{width:100%;margin-top:18px;border:0;border-radius:14px;background:var(--ok);color:#fff;padding:15px;font-family:inherit;font-size:16px;font-weight:600;cursor:pointer}
+.aviso{font-size:12.5px;color:var(--muted);text-align:center;margin-top:10px}
+.solo-print{display:none}
+
+/* ---------- Versión impresa / PDF ---------- */
+@media print{
+  @page{size:letter;margin:14mm 14mm 12mm}
+  body{background:#fff;padding:0;font-size:11.5pt}
+  nav,.buscar,.ctl,.barra,.panel,.fondo,.info,.estado,.pdf,.no-print{display:none!important}
+  .solo-print{display:block}
+  .w{max-width:none;padding:0}
+  header{padding:0 0 10px;border-bottom:1.5px solid var(--ink);display:flex;align-items:center;gap:16px;text-align:left}
+  header .logo{margin:0;width:56px;height:56px;flex:none}
+  header .hd{flex:1}
+  h1{font-size:24pt;margin:0}
+  .lema{margin:2px 0 0}
+  .datos{font-size:9.5pt;color:var(--muted);margin-top:4px}
+  .qrp{flex:none;text-align:center;font-size:8pt;color:var(--muted)}
+  .qrp img{width:84px;height:84px;display:block;margin:0 auto 2px}
+  main{columns:2;column-gap:26px}
+  section{break-inside:avoid;padding-top:14px}
+  .lista{border:0;border-radius:0;background:none;margin-top:4px}
+  .item{padding:5px 0;border-top:1px dotted var(--line)}
+  .precio{margin:0;font-size:11.5pt}
+  .item{align-items:flex-start}
+  .txt{display:flex;flex-wrap:wrap;justify-content:space-between;column-gap:10px}
+  .txt .desc{flex-basis:100%;order:3;font-size:9.5pt}
+  footer{padding:14px 0 0;font-size:9pt;border-top:1px solid var(--line);margin-top:14px}
+}
+</style>
+</head>
+<body>
+<header class="w">
+  <div class="logo" id="logo"></div>
+  <div class="hd">
+    <h1 id="nombre"></h1>
+    <p class="lema" id="lema"></p>
+    <div class="solo-print datos" id="datosPrint"></div>
+    <div class="estado" id="estado"><span class="dot"></span><span id="estadoTxt"></span></div>
+    <div class="info" id="info"></div>
+  </div>
+  <div class="solo-print qrp"><img src="qr.png" alt="QR del menú">Escanea y pide</div>
+</header>
+
+<nav><div class="chips" id="chips"></div></nav>
+
+<div class="w">
+  <input class="buscar" id="buscar" type="search" placeholder="Buscar en el menú" autocomplete="off">
+  <main id="menu"></main>
+  <div class="vacio" id="vacio">No encontramos ese platillo.</div>
+  <footer>
+    <a class="pdf no-print" id="pdfLink" href="#" download>Descargar menú en PDF</a>
+    <div>Precios en pesos mexicanos, incluyen IVA.</div>
+    <div id="firma"></div>
+  </footer>
+</div>
+
+<div class="barra" id="barra" style="display:none">
+  <button type="button" id="verPedido"><span><span class="cnt" id="cnt">0</span>Ver pedido</span><span id="sub"></span></button>
+</div>
+
+<div class="fondo" id="fondo"></div>
+<div class="panel" id="panel" role="dialog" aria-label="Tu pedido">
+  <div class="w">
+    <div class="asa"></div>
+    <h3>Tu pedido <button class="cerrar" id="cerrar" aria-label="Cerrar">&times;</button></h3>
+    <div id="resumen"></div>
+    <div class="total"><span>Total</span><span id="total"></span></div>
+    <label>Tu nombre</label>
+    <input id="cliente" placeholder="Ej. Ana" autocomplete="name">
+    <label>¿Cómo lo quieres?</label>
+    <div class="opc" id="servicio"></div>
+    <div class="dir" id="dirBox">
+      <label>Dirección de entrega</label>
+      <input id="direccion" placeholder="Calle, número y colonia" autocomplete="street-address">
+      <div class="envio" id="envioTxt"></div>
+    </div>
+    <label>Notas (opcional)</label>
+    <textarea id="notas" rows="2" placeholder="Sin cebolla, salsa aparte, etc."></textarea>
+    <button class="enviar" id="enviar" type="button">Enviar pedido por WhatsApp</button>
+    <div class="aviso">Se abrirá WhatsApp con tu pedido listo para enviar.</div>
+  </div>
+</div>
+
+<script>
+(function(){
+  var $ = function(id){ return document.getElementById(id); };
+  var pedido = {};          // clave "c-i" -> cantidad
+  var servicio = CONFIG.servicio[0];
+
+  function dinero(n){ return CONFIG.moneda + n.toLocaleString("es-MX"); }
+  function esc(s){ return String(s).replace(/[&<>"]/g, function(c){ return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]; }); }
+  function slug(s){ return s.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,"-"); }
+
+  // Encabezado
+  document.title = CONFIG.nombre + " · Menú";
+  $("nombre").textContent = CONFIG.nombre;
+  $("lema").textContent = CONFIG.lema;
+  $("logo").textContent = CONFIG.nombre.replace(/^(Taquer[ií]a|Cafeter[ií]a|Restaurante|La|El|Los|Las)\s+/i,"").replace(/^(El|La|Los|Las)\s+/i,"").charAt(0);
+  $("firma").textContent = CONFIG.firma;
+  $("pdfLink").href = CONFIG.pdf;
+  $("datosPrint").textContent = CONFIG.horarioTexto + "  ·  " + CONFIG.direccion + "  ·  WhatsApp " + CONFIG.telefono;
+  $("info").innerHTML =
+    '<a href="' + CONFIG.mapa + '" target="_blank" rel="noopener">Cómo llegar</a>' +
+    '<a href="https://wa.me/' + CONFIG.whatsapp + '" target="_blank" rel="noopener">WhatsApp ' + esc(CONFIG.telefono) + '</a>' +
+    '<a href="tel:' + CONFIG.telefono.replace(/\s/g,"") + '">Llamar</a>';
+
+  // Abierto / cerrado
+  (function(){
+    var h = CONFIG.horario, now = new Date(), d = now.getDay(), hr = now.getHours() + now.getMinutes()/60;
+    var abierto = (h.dias.indexOf(d) > -1 && hr >= h.abre && hr < h.cierra) ||
+                  (h.cierra > 24 && h.dias.indexOf((d + 6) % 7) > -1 && hr < h.cierra - 24);
+    $("estado").className = "estado" + (abierto ? " abierto" : "");
+    $("estadoTxt").textContent = (abierto ? "Abierto ahora · " : "Cerrado ahora · ") + CONFIG.horarioTexto;
+  })();
+
+  // Menú
+  var html = "", chips = "";
+  MENU.forEach(function(c, ci){
+    var id = "c-" + slug(c.cat);
+    chips += '<button class="chip' + (ci === 0 ? " on" : "") + '" data-t="' + id + '">' + esc(c.cat) + "</button>";
+    html += '<section id="' + id + '"><h2>' + esc(c.cat) + "</h2>" + (c.nota ? '<p class="nota">' + esc(c.nota) + "</p>" : "") + '<div class="lista">';
+    c.items.forEach(function(it, ii){
+      var k = ci + "-" + ii;
+      html += '<div class="item" data-k="' + k + '" data-s="' + esc(slug(it.n + " " + (it.d || ""))) + '">' +
+        '<div class="txt"><div class="nom">' + esc(it.n) + (it.e ? '<span class="tag">' + esc(it.e) + "</span>" : "") + "</div>" +
+        (it.d ? '<div class="desc">' + esc(it.d) + "</div>" : "") +
+        '<div class="precio">' + dinero(it.p) + "</div></div>" +
+        '<div class="ctl cero" id="ctl' + k + '"><button class="b menos" data-k="' + k + '" data-v="-1" aria-label="Quitar">&minus;</button>' +
+        '<span class="q" id="q' + k + '">0</span><button class="b mas" data-k="' + k + '" data-v="1" aria-label="Agregar">+</button></div></div>';
+    });
+    html += "</div></section>";
+  });
+  $("menu").innerHTML = html;
+  $("chips").innerHTML = chips;
+
+  function item(k){ var p = k.split("-"); return MENU[+p[0]].items[+p[1]]; }
+
+  function pintar(){
+    var n = 0, t = 0;
+    Object.keys(pedido).forEach(function(k){ n += pedido[k]; t += pedido[k] * item(k).p; });
+    $("barra").style.display = n ? "block" : "none";
+    $("cnt").textContent = n;
+    $("sub").textContent = dinero(t);
+    var r = "";
+    Object.keys(pedido).forEach(function(k){
+      var it = item(k);
+      r += '<div class="fila"><span>' + pedido[k] + " × " + esc(it.n) + "</span><span>" + dinero(pedido[k] * it.p) + "</span></div>";
+    });
+    $("resumen").innerHTML = r;
+    $("total").textContent = dinero(t);
+    if (!n) cerrar();
+    return t;
+  }
+
+  $("menu").addEventListener("click", function(e){
+    var b = e.target.closest(".b"); if (!b) return;
+    var k = b.getAttribute("data-k"), v = +b.getAttribute("data-v");
+    var q = Math.max(0, (pedido[k] || 0) + v);
+    if (q) pedido[k] = q; else delete pedido[k];
+    $("q" + k).textContent = q;
+    $("ctl" + k).className = "ctl" + (q ? "" : " cero");
+    pintar();
+  });
+
+  // Chips de categorías
+  $("chips").addEventListener("click", function(e){
+    var c = e.target.closest(".chip"); if (!c) return;
+    $(c.getAttribute("data-t")).scrollIntoView({ behavior: "smooth" });
+  });
+  var secs = document.querySelectorAll("main section");
+  window.addEventListener("scroll", function(){
+    var act = secs[0];
+    secs.forEach(function(s){ if (s.getBoundingClientRect().top < 90) act = s; });
+    document.querySelectorAll(".chips .chip").forEach(function(c){
+      var on = c.getAttribute("data-t") === act.id;
+      if (on && !c.classList.contains("on")) c.scrollIntoView({ block: "nearest", inline: "center" });
+      c.classList.toggle("on", on);
+    });
+  }, { passive: true });
+
+  // Buscador
+  $("buscar").addEventListener("input", function(){
+    var q = slug(this.value.trim()).replace(/^-|-$/g, ""), hay = 0;
+    secs.forEach(function(s){
+      var vis = 0;
+      s.querySelectorAll(".item").forEach(function(i){
+        var ok = !q || i.getAttribute("data-s").indexOf(q) > -1;
+        i.style.display = ok ? "" : "none"; if (ok) vis++;
+      });
+      s.style.display = vis ? "" : "none"; hay += vis;
+    });
+    $("vacio").style.display = hay ? "none" : "block";
+  });
+
+  // Tipo de servicio
+  $("servicio").innerHTML = CONFIG.servicio.map(function(s, i){
+    return '<button type="button" class="chip' + (i === 0 ? " on" : "") + '">' + esc(s) + "</button>";
+  }).join("");
+  $("envioTxt").textContent = CONFIG.envio || "";
+  $("servicio").addEventListener("click", function(e){
+    var c = e.target.closest(".chip"); if (!c) return;
+    servicio = c.textContent;
+    this.querySelectorAll(".chip").forEach(function(x){ x.classList.toggle("on", x === c); });
+    $("dirBox").style.display = /domicilio/i.test(servicio) ? "block" : "none";
+  });
+
+  // Panel
+  function abrir(){ $("panel").classList.add("on"); $("fondo").classList.add("on"); }
+  function cerrar(){ $("panel").classList.remove("on"); $("fondo").classList.remove("on"); }
+  $("verPedido").onclick = abrir; $("cerrar").onclick = cerrar; $("fondo").onclick = cerrar;
+
+  // Enviar por WhatsApp
+  $("enviar").onclick = function(){
+    var t = pintar(), lineas = ["Hola, quiero hacer un pedido en " + CONFIG.nombre + ":", ""];
+    Object.keys(pedido).forEach(function(k){
+      var it = item(k);
+      lineas.push("• " + pedido[k] + " × " + it.n + "  " + dinero(pedido[k] * it.p));
+    });
+    lineas.push("", "Total: " + dinero(t), "Servicio: " + servicio);
+    var nom = $("cliente").value.trim(), dir = $("direccion").value.trim(), nt = $("notas").value.trim();
+    if (/domicilio/i.test(servicio)) {
+      if (!dir) { $("direccion").focus(); $("direccion").placeholder = "Escribe tu dirección para el envío"; return; }
+      lineas.push("Dirección: " + dir);
+    }
+    if (nom) lineas.push("Nombre: " + nom);
+    if (nt) lineas.push("Notas: " + nt);
+    window.open("https://wa.me/" + CONFIG.whatsapp + "?text=" + encodeURIComponent(lineas.join("\n")), "_blank");
+  };
+})();
+</script>
+</body>
+</html>
