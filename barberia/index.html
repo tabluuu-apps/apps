@@ -100,6 +100,36 @@ var URL_APPS_SCRIPT = 'https://script.google.com/macros/s/AKfycbxuBTWvEuc3JVEIIp
 })();
 </script>
 <title>Citas</title>
+<!-- ===== App instalable (solo la agenda del dueño) ===== -->
+<meta name="theme-color" content="#5F6F7E">
+<link rel="apple-touch-icon" href="iconos/apple-touch-icon.png">
+<link rel="icon" type="image/png" href="iconos/icono-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Barbería">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<script>
+(function () {
+  var esPanel = /[?&]panel=1/.test(location.search);
+  if (!esPanel) return; /* los clientes solo ven el link normal */
+  document.title = 'Agenda Barbería';
+  var l = document.createElement('link'); l.rel = 'manifest'; l.href = 'manifest.json';
+  document.head.appendChild(l);
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); });
+  }
+  var aviso = null;
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault(); aviso = e;
+    var b = document.createElement('button');
+    b.id = 'instalar'; b.textContent = 'Instalar app';
+    b.style.cssText = 'position:fixed;right:14px;bottom:14px;z-index:20;border:0;border-radius:999px;padding:11px 18px;background:#5F6F7E;color:#fff;font:600 14px -apple-system,Segoe UI,Roboto,sans-serif;box-shadow:0 4px 14px rgba(46,50,54,.18);cursor:pointer';
+    b.onclick = function () { aviso.prompt(); aviso.userChoice.then(function () { b.remove(); aviso = null; }); };
+    document.body.appendChild(b);
+  });
+  window.addEventListener('appinstalled', function () { var b = document.getElementById('instalar'); if (b) b.remove(); });
+})();
+</script>
 </head>
 <body>
 <div class="app" id="app"><div class="cargando">Cargando…</div></div>
